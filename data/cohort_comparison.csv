@@ -1,0 +1,5 @@
+﻿strategy,student_20m_n3_pct,student_20m_n3_rem_pct,student_20m_lead_min,public_30m_rf_n3_pct,public_30m_rf_lr_n3_rem_pct,public_30m_rf_lr_lead_min
+Fixed,13.7,46.3,0,2.9116,34.7274,0.0000
+WakeOnly,13.1,43.6,1.1,2.9116,33.2451,8.0852
+Greedy_Light_k3,2.1,13.1,16.3,2.4881,23.0545,24.0240
+Dynamic_Asym_Proposed,1.5,11.1,6.5,1.9587,24.4309,15.1124

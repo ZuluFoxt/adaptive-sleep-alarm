@@ -1,0 +1,6 @@
+Strategy,Deep_N3_Rate(%),REM_Rate(%),Total_Adverse_Rate(%),Mean_Sleep_Loss(min)
+Fixed,2.22,25.58,27.8,0.0
+WakeOnly,1.07,13.45,14.52,9.32
+Greedy_k3,0.31,3.56,3.88,17.08
+Dynamic_Sym_k3,0.53,6.8,7.33,12.76
+Dynamic_Asym_Proposed,0.63,8.9,9.52,11.34

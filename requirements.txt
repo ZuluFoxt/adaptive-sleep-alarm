@@ -1,0 +1,7 @@
+numpy>=2.0
+pandas>=2.2
+scikit-learn>=1.5
+matplotlib>=3.9
+requests>=2.31
+mne>=1.7
+Pillow>=10
