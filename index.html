@@ -568,11 +568,44 @@ if(typeof document!=='undefined'){
     },delay);
   }
 
-  pad.addEventListener('pointerdown',e=>{
+ pad.addEventListener('pointerdown',e=>{
     e.preventDefault();
     if(state==='idle'){
       if(!kssEl.value){alert('请先在上方选择您当前的 KSS 困倦度评分（1–9分）！');kssEl.focus();return;}
       const durSec=Number(durEl.value)||60;
       rts=[];lapses=0;falseStarts=0;outEl.hidden=true;
       endTime=performance.now()+durSec*1000;
-      deadlineTimer=setTimeout
+      deadlineTimer=setTimeout(finishTest,durSec*1000+50);
+      progEl.textContent=`测试进行中（共 ${durSec} 秒，盲法时间遮蔽中...）`;
+      scheduleNext();
+    }else if(state==='wait'){
+      stopTrialTimers();falseStarts++;state='warn';pad.className='pvt-pad pvt-warn';
+      pad.innerHTML='<span>⚠️ 抢跑误按！请等变绿再点</span>';
+      timer=setTimeout(scheduleNext,900);
+    }else if(state==='go'){
+      stopTrialTimers();
+      const rt=Math.round(performance.now()-stimTime);
+      if(rt<100){
+        falseStarts++;state='warn';pad.className='pvt-pad pvt-warn';
+        pad.innerHTML=`<span>⚠️ 抢跑 (${rt} ms < 100 ms)</span>`;
+      }else{
+        rts.push(rt);if(rt>=500)lapses++;
+        state='warn';pad.className='pvt-pad pvt-idle';
+        pad.innerHTML=`<span>本次反应：${rt} ms ${rt>=500?'(走神迟缓)':''}</span>`;
+      }
+      timer=setTimeout(scheduleNext,750);
+    }
+  });
+
+  document.getElementById('pvt-copy-csv').onclick=async()=>{
+    const logs=loadLogs();
+    if(!logs.length){alert('暂无记录');return;}
+    const header='日期,完成时刻,唤醒方式,醒前睡眠阶段,KSS困倦分,平均反应时(ms),中位反应时(ms),反应速度(1/s),走神次数(>=500ms),抢跑次数,有效试次';
+    const rows=logs.map(r=>[r.date,r.clock,r.mode||'待填',r.stage||'待核对',r.kss,r.mean,r.median,r.speed,r.lapses,r.fs,r.trials].join(','));
+    const csv=[header,...rows].join('\n');
+    try{await navigator.clipboard.writeText(csv);alert('已复制 CSV 数据到剪贴板！');}catch{prompt('请手动复制以下 CSV：',csv);}
+  };
+  document.getElementById('pvt-clear').onclick=()=>{if(confirm('确定清空本机保存的测试记录吗？'))saveLogs([]);};
+  renderLogs();
+})();
+</script></html>
