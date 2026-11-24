@@ -1,9 +1,72 @@
 <!doctype html><html lang="zh"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>醒前一小时 · 睡眠分期测算</title>
+<title>醒前一小时 · 睡眠分期测算与醒后认知自测</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f7f6fb;color:#211b35;font:16px/1.65 "Microsoft YaHei",system-ui,sans-serif}main{max-width:780px;margin:60px auto;padding:0 22px}h1{font-size:clamp(32px,7vw,52px);line-height:1.15;margin:0}p{color:#534c66}.upload{display:block;padding:24px;border:1px dashed #8369a6;border-radius:16px;background:#fff;margin:26px 0 14px}input,button{font:inherit;max-width:100%}button{border:0;background:#66448d;color:white;border-radius:8px;padding:8px 14px}details{margin:18px 0}label{display:inline-block;margin-right:10px}section{padding:20px 0;border-top:1px solid #ded7ea}.bar{height:20px;display:flex;overflow:hidden;border-radius:6px}.bar span{flex:1}.key{display:flex;flex-wrap:wrap;gap:10px 26px}#status{min-height:2em}.muted{font-size:.88rem}
-textarea{width:100%;font:inherit;padding:10px;margin-bottom:10px}summary,button{cursor:pointer}#result output{display:block;margin:14px 0}h2{font-size:1.25rem}main{margin:clamp(24px,6vw,65px) auto}button{margin:4px 0}</style>
-<main><h1>我的唤醒窗口</h1><p>每晚选一张睡眠分期截图（可裁去上下内容，请保留整条曲线、图表网格和横轴时间），可一次多选，也可分次添加。页面会用各晚醒前一小时的分期顺序，估算适合这些记录的共同唤醒窗口。</p>
+textarea{width:100%;font:inherit;padding:10px;margin-bottom:10px}summary,button{cursor:pointer}#result output{display:block;margin:14px 0}h2{font-size:1.25rem}main{margin:clamp(24px,6vw,65px) auto}button{margin:4px 0}
+.pvt-card{background:#fff;border:1px solid #ded7ea;border-radius:16px;padding:18px;margin:22px 0}
+.pvt-pad{height:210px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.35rem;font-weight:700;color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;cursor:pointer;margin:14px 0;transition:background .05s;text-align:center;padding:16px}
+.pvt-idle{background:#3b3355}.pvt-wait{background:#2a243d}.pvt-go{background:#16a34a;font-size:2.2rem}.pvt-warn{background:#d97706}
+.pvt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.pvt-stat{background:#f7f6fb;padding:10px 12px;border-radius:10px;font-size:.9rem}
+.pvt-stat b{display:block;font-size:1.25rem;color:#4c2882}
+select{font:inherit;padding:6px 8px;border-radius:6px;border:1px solid #cbbde0;background:#fff;max-width:100%}
+.log-item{font-size:.88rem;padding:8px 0;border-bottom:1px dashed #e5dff0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+</style>
+<main><h1>我的唤醒窗口</h1>
+
+<section class="pvt-card" id="pvt-section">
+  <h2>⚡ 醒后单盲认知自测（KSS 困倦度 + 60 秒 PVT 反应时）</h2>
+  <p class="muted">单盲时间遮蔽：请于闹钟响起后先完成下方困倦评分与 60 秒反应时测试，提交后将自动记录精确时刻，供事后对照手环截图核对唤醒睡眠阶段。</p>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0">
+    <label>1. 当前困倦度 (KSS)：
+      <select id="kss-val">
+        <option value="">-- 请选择 (1-9分) --</option>
+        <option value="1">1分 · 极度清醒</option>
+        <option value="2">2分 · 非常清醒</option>
+        <option value="3">3分 · 清醒</option>
+        <option value="4">4分 · 比较清醒</option>
+        <option value="5">5分 · 既不清醒也不困倦</option>
+        <option value="6">6分 · 有些困倦迹象</option>
+        <option value="7">7分 · 困倦，但无需费力保持清醒</option>
+        <option value="8">8分 · 困倦，需费一定力气保持清醒</option>
+        <option value="9">9分 · 极度困倦，难以保持清醒</option>
+      </select>
+    </label>
+    <label>唤醒方式：
+      <select id="alarm-mode">
+        <option value="定点闹钟">定点闹钟</option>
+        <option value="自适应提前唤醒">自适应提前唤醒</option>
+        <option value="自然醒">自然醒</option>
+      </select>
+    </label>
+    <label>时长：
+      <select id="pvt-dur">
+        <option value="60">60 秒 (标准速测)</option>
+        <option value="180">180 秒 (3分钟完整版)</option>
+      </select>
+    </label>
+  </div>
+  <div id="pvt-pad" class="pvt-pad pvt-idle" role="button" tabindex="0">
+    <span>先选上方 KSS 分数，再点击此处开始 60 秒 PVT 测试</span>
+    <small style="font-weight:400;font-size:.85rem;margin-top:8px;opacity:.85">规则：盯住此框，背景变绿并跳出毫秒数字时，以最快速度触屏点击！</small>
+  </div>
+  <div id="pvt-progress" class="muted" style="text-align:center"></div>
+  <div id="pvt-output" hidden>
+    <div class="pvt-grid" id="pvt-stats"></div>
+    <p class="muted" id="pvt-unlock-time"></p>
+  </div>
+  <details id="pvt-history-box" style="margin-top:12px">
+    <summary>查看本机已保存的晨间自测记录 (<span id="pvt-count">0</span> 条) & 导出 CSV</summary>
+    <p class="muted">起床后可将当晚手环截图放入下方测算器，确认闹钟响起时刻所处的睡眠阶段并在此补标：</p>
+    <div id="pvt-list"></div>
+    <div style="margin-top:10px">
+      <button id="pvt-copy-csv" type="button">一键复制全部 CSV 数据</button>
+      <button id="pvt-clear" type="button" style="background:#9ca3af">清空本机记录</button>
+    </div>
+  </details>
+</section>
+
+<p>每晚选一张睡眠分期截图（可裁去上下内容，请保留整条曲线、图表网格和横轴时间），可一次多选，也可分次添加。页面会用各晚醒前一小时的分期顺序，估算适合这些记录的共同唤醒窗口。</p>
 <label class="upload">添加多晚截图 <input id="batch" type="file" multiple accept="image/*"></label>
 <p class="muted">图片仅在当前浏览器处理。</p>
 <section aria-live="polite"><h2>多晚测算结果</h2><strong id="summary">等待添加截图</strong><p id="detail"></p></section>
@@ -18,7 +81,6 @@ const templates={"0":["000000111110000000011111111110000001111000111100001110000
 const stageNames={U:'未分期',W:'清醒',L:'浅睡',D:'深睡',R:'快速眼动'};
 const stageColors={U:'#aaa4b6',W:'#efbd4d',L:'#ce70d4',D:'#9231f0',R:'#f47e83'};
 function analyzeOther(data,w,h,override){
- // Locate the Core/light band, then measure the surrounding horizontal grid rules.
  const step=1, bands=[];
  let band=null;
  for(let y=0;y<h;y++){
@@ -102,7 +164,6 @@ function analyzeOther(data,w,h,override){
   const sequence=Array.from({length:60},(_,i)=>{
    const x=Math.round(last-(last-first)*(59.5-i)/duration);
    if(states[x] && states[x]!=='U')return states[x];
-   // Bridge only a narrow antialiased boundary between adjacent colored segments.
    const limit=Math.max(1,Math.round(width/500));
    for(let d=1;d<=limit;d++){
     for(const n of [x-d,x+d])if(states[n]&&states[n]!=='U')return states[n];
@@ -114,9 +175,7 @@ function analyzeOther(data,w,h,override){
  return null;
 }
 
-
 function locateHuaweiChart(data,w,h){
- // The long violet light-sleep band anchors the plot independently of the page margins.
  function light(x,y){
   const i=4*(y*w+x),r=data[i],g=data[i+1],b=data[i+2];
   return r>150 && r<235 && g>85 && g<165 && b>165 && b-g>48;
@@ -381,7 +440,8 @@ if(typeof document!=='undefined'){
    if(row.needsTime){
     const fields=['入睡','醒来'].map((name,i)=>{
      const label=document.createElement('label'),input=document.createElement('input');
-     input.type='time';input.value=row.times[i];input.oninput=()=>{row.times[i]=input.value;};
+     input.type='time';input.value=row.times[i];oninput=()=>{row.times[i]=input.value;};
+     input.oninput=()=>{row.times[i]=input.value;};
      label.append(name,input);line.append(label);return input;
     });
     const apply=document.createElement('button');apply.textContent='纳入这晚';
@@ -421,8 +481,112 @@ if(typeof document!=='undefined'){
    }catch(e){row.error='未纳入 · '+e.message;row.needsTime=!!(e.needsTime||override);}
    row.pending=false;update();
  }
-}</script></html>
+}
+(function(){
+  if(typeof document==='undefined')return;
+  const pad=document.getElementById('pvt-pad'),kssEl=document.getElementById('kss-val'),modeEl=document.getElementById('alarm-mode'),durEl=document.getElementById('pvt-dur'),progEl=document.getElementById('pvt-progress'),outEl=document.getElementById('pvt-output'),statsEl=document.getElementById('pvt-stats'),timeEl=document.getElementById('pvt-unlock-time'),listEl=document.getElementById('pvt-list'),cntEl=document.getElementById('pvt-count');
+  const KEY='group3_pvt_records_v1';
+  let state='idle',timer=null,raf=null,endTime=0,stimTime=0,rts=[],lapses=0,falseStarts=0;
 
+  function loadLogs(){try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{return[];}}
+  function saveLogs(logs){try{localStorage.setItem(KEY,JSON.stringify(logs));}catch{}renderLogs();}
 
+  function renderLogs(){
+    const logs=loadLogs();cntEl.textContent=logs.length;listEl.replaceChildren();
+    logs.forEach((item,idx)=>{
+      const row=document.createElement('div');row.className='log-item';
+      const info=document.createElement('span');
+      info.textContent=`[${item.date} ${item.clock}] ${item.mode} | KSS:${item.kss}分 | 均值:${item.mean}ms | 中位:${item.median}ms | 走神(≥500ms):${item.lapses}次 | 抢跑:${item.fs}次`;
+      const sel=document.createElement('select');
+      ['待核对手环','浅睡 (N1/N2)','快速眼动 (REM)','深睡 (N3)','清醒 (Wake)'].forEach(st=>{
+        const opt=document.createElement('option');opt.value=st;opt.textContent='醒前阶段: '+st;
+        if(item.stage===st)opt.selected=true;sel.append(opt);
+      });
+      sel.onchange=()=>{const all=loadLogs();if(all[idx]){all[idx].stage=sel.value;saveLogs(all);}};
+      row.append(info,sel);listEl.append(row);
+    });
+  }
 
+  function stopTimers(){clearTimeout(timer);cancelAnimationFrame(raf);}
 
+  function finishTest(){
+    stopTimers();state='idle';
+    pad.className='pvt-pad pvt-idle';
+    pad.innerHTML='<span>测试完成！点击可重新测试</span>';
+    progEl.textContent='';
+    if(!rts.length){outEl.hidden=false;statsEl.innerHTML='<p>未记录到有效反应，请重试。</p>';return;}
+    const sorted=[...rts].sort((a,b)=>a-b);
+    const mean=Math.round(rts.reduce((a,b)=>a+b,0)/rts.length);
+    const median=Math.round(sorted[Math.floor(sorted.length/2)]);
+    const speed=(rts.reduce((a,b)=>a+1000/b,0)/rts.length).toFixed(2);
+    const now=new Date();
+    const dateStr=`${now.getMonth()+1}/${now.getDate()}`;
+    const clockStr=now.toTimeString().slice(0,8);
+    outEl.hidden=false;
+    statsEl.innerHTML=`<div class="pvt-stat"><span>平均反应时</span><b>${mean} ms</b></div><div class="pvt-stat"><span>中位反应时</span><b>${median} ms</b></div><div class="pvt-stat"><span>走神迟缓 (≥500ms)</span><b>${lapses} 次</b></div><div class="pvt-stat"><span>平均反应速度</span><b>${speed} /s</b></div><div class="pvt-stat"><span>有效试次 / 抢跑</span><b>${rts.length} / ${falseStarts}</b></div><div class="pvt-stat"><span>KSS 困倦评分</span><b>${kssEl.value} 分</b></div>`;
+    timeEl.textContent=`🔓 单盲时间已解锁：本次测试完成于 ${dateStr} ${clockStr}（已自动保存至本机历史记录，起床后可在下方补标手环对应的醒前睡眠阶段）。`;
+    const logs=loadLogs();
+    logs.unshift({date:dateStr,clock:clockStr,mode:modeEl.value,kss:+kssEl.value,mean,median,speed:+speed,lapses,fs:falseStarts,trials:rts.length,stage:'待核对手环'});
+    saveLogs(logs);
+    document.getElementById('pvt-history-box').open=true;
+  }
+
+  function scheduleNext(){
+    stopTimers();
+    if(performance.now()>=endTime){finishTest();return;}
+    state='wait';pad.className='pvt-pad pvt-wait';
+    pad.innerHTML='<span>请专注盯住屏幕...</span><small style="font-weight:400;font-size:.85rem;margin-top:6px;opacity:.75">变绿时立即点击（切勿抢跑）</small>';
+    const delay=2000+Math.random()*4000;
+    if(performance.now()+delay>=endTime){timer=setTimeout(finishTest,Math.max(0,endTime-performance.now()));return;}
+    timer=setTimeout(()=>{
+      state='go';stimTime=performance.now();pad.className='pvt-pad pvt-go';
+      function tick(){
+        if(state!=='go')return;
+        const elapsed=Math.round(performance.now()-stimTime);
+        pad.textContent=elapsed+' ms';
+        raf=requestAnimationFrame(tick);
+      }
+      tick();
+    },delay);
+  }
+
+  pad.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    if(state==='idle'){
+      if(!kssEl.value){alert('请先在上方选择您当前的 KSS 困倦度评分（1–9分）！');kssEl.focus();return;}
+      const durSec=Number(durEl.value)||60;
+      rts=[];lapses=0;falseStarts=0;outEl.hidden=true;
+      endTime=performance.now()+durSec*1000;
+      progEl.textContent=`测试进行中（共 ${durSec} 秒，时间遮蔽中...）`;
+      scheduleNext();
+    }else if(state==='wait'){
+      stopTimers();falseStarts++;state='warn';pad.className='pvt-pad pvt-warn';
+      pad.innerHTML='<span>⚠️ 抢跑误按！请等变绿再点</span>';
+      timer=setTimeout(scheduleNext,900);
+    }else if(state==='go'){
+      stopTimers();
+      const rt=Math.round(performance.now()-stimTime);
+      if(rt<100){
+        falseStarts++;state='warn';pad.className='pvt-pad pvt-warn';
+        pad.innerHTML=`<span>⚠️ 抢跑 (${rt} ms < 100 ms)</span>`;
+      }else{
+        rts.push(rt);if(rt>=500)lapses++;
+        state='warn';pad.className='pvt-pad pvt-idle';
+        pad.innerHTML=`<span>本次反应：${rt} ms ${rt>=500?'(走神迟缓)':''}</span>`;
+      }
+      timer=setTimeout(scheduleNext,750);
+    }
+  });
+
+  document.getElementById('pvt-copy-csv').onclick=async()=>{
+    const logs=loadLogs();
+    if(!logs.length){alert('暂无记录');return;}
+    const header='日期,完成时刻,唤醒方式,醒前睡眠阶段,KSS困倦分,平均反应时(ms),中位反应时(ms),反应速度(1/s),走神次数(>=500ms),抢跑次数,有效试次';
+    const rows=logs.map(r=>[r.date,r.clock,r.mode,r.stage,r.kss,r.mean,r.median,r.speed,r.lapses,r.fs,r.trials].join(','));
+    const csv=[header,...rows].join('\n');
+    try{await navigator.clipboard.writeText(csv);alert('已复制 CSV 数据到剪贴板！');}catch{prompt('请手动复制以下 CSV：',csv);}
+  };
+  document.getElementById('pvt-clear').onclick=()=>{if(confirm('确定清空本机保存的测试记录吗？'))saveLogs([]);};
+  renderLogs();
+})();
+</script></html>
